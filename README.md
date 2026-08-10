@@ -1,99 +1,46 @@
-# 📊 Bilingual Sentiment Analysis of Daraz Reviews
+# Bilingual Sentiment Analysis — Code-Mixed Urdu/English Reviews
 
-## 📝 Project Overview
-This project analyzes **bilingual product reviews (Urdu + English)** from **Daraz.pk**, classifying them into **positive**, **negative**, or **neutral** sentiments using supervised machine learning techniques. It incorporates traditional text preprocessing, TF-IDF vectorization, and a **Flask-based web interface** for real-time sentiment prediction.
+Sentiment classification for code-mixed Urdu-English product reviews, where English-only sentiment models fail.
 
----
+Reviews on South Asian e-commerce platforms are routinely written in Roman Urdu, English, or both within a single sentence. Off-the-shelf sentiment tools score these as noise. This model reads them.
 
-## 🧰 Technologies and Tools Used
+## Approach
 
-| Technology         | Purpose                                      |
-|--------------------|----------------------------------------------|
-| Python             | Core programming language                    |
-| Pandas             | Data loading and manipulation                |
-| scikit-learn       | ML algorithms, TF-IDF vectorization          |
-| Matplotlib         | Data visualization                           |
-| Flask              | Web application framework                    |
-| Pickle             | Model serialization                          |
-| Jupyter Notebook   | Exploratory analysis & model development     |
-| HTML/CSS (via Flask)| Frontend of web UI                          |
-| Urdu Stopwords List| Urdu text preprocessing                      |
+| Stage | Implementation |
+|---|---|
+| Data | Two annotated review sets merged — labelled bilingual reviews and code-mixed Urdu-English reviews |
+| Class balancing | Undersampling of the majority class to prevent a degenerate classifier |
+| Preprocessing | Lowercasing, tokenisation, and stopword removal against **both** an English list and a custom 500-word Urdu list (`Urdustopwords.txt`) |
+| Features | TF-IDF vectorisation |
+| Model | Support Vector Classifier, tuned on the balanced set |
+| Serving | Vectoriser and model serialised with pickle, loaded by a Streamlit app for real-time scoring |
 
----
+The bilingual stopword handling is the part that matters — removing English stopwords alone leaves Urdu function words dominating the TF-IDF space and washing out sentiment signal.
 
-## 📦 Dataset
+## Stack
 
-Two annotated datasets are used:
+Python · scikit-learn · pandas · Streamlit · Matplotlib
 
-- `Daraz FYP Dataset.csv` – Labeled bilingual reviews.
-- `daraz-code-mixed-product-reviews.csv` – Urdu-English code-mixed reviews.
+## Running It
 
-### 🔧 Preprocessing Steps
-- Urdu & English stopword removal (custom list included)
-- Dataset balancing via **undersampling**
-- TF-IDF vectorization for feature extraction
+```bash
+pip install -r requirements.txt
+streamlit run main.py
+```
 
----
+Paste a review in any mix of Urdu and English; the app returns a sentiment classification.
 
-## 📁 Project Structure
+## Repository Contents
 
-Bilingual Daraz Review Classifier/
-├── App/
-│ ├── main.py # Flask backend
-│ ├── svcModel(ok).pickle # Trained SVC model
-│ ├── vectorizer.pickle # Trained TF-IDF vectorizer
-│ └── how_to_run_web_app.txt # Instructions to run the app
-├── Daraz FYP Dataset.csv
-├── daraz-code-mixed-product-reviews.csv
-├── Urdustopwords.txt # Custom Urdu stopword list
-├── readme.txt # Basic explanation
-├── Jupyter file.ipynb # Analysis and model training
-├── Final Report.pdf # Academic project report
+| File | Purpose |
+|---|---|
+| `main.py` | Streamlit scoring interface |
+| `Jupyter file.ipynb` | Data merging, preprocessing, training and evaluation |
+| `svcModel(ok).pickle` | Trained SVC classifier |
+| `vectorizer.pickle` | Fitted TF-IDF vectoriser |
+| `Urdustopwords.txt` | Custom Urdu stopword list |
+| `*.csv` | Annotated review datasets |
 
+## Extending It
 
----
-
-## 🧠 Model Development
-
-All training and analysis steps are documented in `Jupyter file.ipynb`:
-
-1. Load and merge both datasets  
-2. Label balancing using undersampling  
-3. Text preprocessing  
-    - Lowercasing  
-    - Stopword removal (English & Urdu)  
-    - Tokenization  
-4. Feature extraction using **TF-IDF**  
-5. Training a **Support Vector Classifier (SVC)**  
-6. Saving model and vectorizer with **Pickle**  
-
----
-
-## 🌐 Web Application
-
-An interactive Flask web app allows users to input a product review and receive a **sentiment prediction**.
-
-
-### How to Use
-Clone or download this repository
-
-Ensure Python 3 and required libraries are installed:
-
-scikit-learn
-
-pandas
-
-flask
-
-Run Jupyter file.ipynb to explore and (re)train the model
-
-Launch the web app using the main.py script in the App/ directory
-
-
-### ▶️ How to Run
-
-  ```bash
-  cd App
-  python main.py
-
-  Then open your browser at http://127.0.0.1:5000/
+The serialised model and vectoriser are the whole inference path — wrapping them in a FastAPI endpoint is a few lines, and the same preprocessing applies to any Roman-Urdu text domain, not just product reviews.
